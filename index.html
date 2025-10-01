@@ -1,0 +1,441 @@
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Form & Data Management System</title>
+  
+  <!-- Bootstrap 5 CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- DataTables CSS -->
+  <link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/dataTables.bootstrap5.min.css">
+  <link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.4.2/css/buttons.bootstrap5.min.css">
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <!-- Navigation -->
+  <nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow-lg">
+    <div class="container">
+      <a class="navbar-brand fw-bold" href="#">
+        <i class="fas fa-database me-2"></i>Data Management System
+      </a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav ms-auto">
+          <li class="nav-item">
+            <a class="nav-link" href="#form-section">Form</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="#canvas-section">Canvas</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="#table-section">Tables</a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Hero Section -->
+  <div class="hero-section">
+    <div class="container text-center">
+      <h1 class="display-4 fw-bold mb-3">Welcome to Ngopag Bareng</h1>
+      <p class="lead">Tradisinya sebelum mengikuti geng kopag regis form dulu, juga bisa gambar dan bisa liat-liat data data orang yang sudah masuk ke dalam geng kopag</p>
+    </div>
+  </div>
+
+  <!-- Form Section -->
+  <section id="form-section" class="py-5">
+    <div class="container">
+      <div class="row">
+        <div class="col-lg-8 mx-auto">
+          <div class="card shadow-lg border-0">
+            <div class="card-header bg-gradient-primary text-black">
+              <h3 class="card-title mb-0">
+                <i class="fas fa-user-plus me-2"></i>Form Input Data
+              </h3>
+            </div>
+            <div class="card-body p-4">
+              <form id="myForm" method="GET" action="hasil_form.html">
+                <div class="row">
+                  <div class="col-md-6 mb-3">
+                    <label for="nama" class="form-label">
+                      <i class="fas fa-user me-1"></i>Nama Lengkap
+                    </label>
+                    <input type="text" class="form-control form-control-modern" id="nama" name="nama" required>
+                  </div>
+                  <div class="col-md-6 mb-3">
+                    <label for="umur" class="form-label">
+                      <i class="fas fa-birthday-cake me-1"></i>Umur
+                    </label>
+                    <input type="number" class="form-control form-control-modern" id="umur" name="umur" min="1" max="120" required>
+                  </div>
+                </div>
+
+                <div class="row">
+                  <div class="col-md-6 mb-3">
+                    <label for="provinsi" class="form-label">
+                      <i class="fas fa-map-marker-alt me-1"></i>Provinsi
+                    </label>
+                    <select class="form-select form-control-modern" id="provinsi" name="provinsi" onchange="loadKota()">
+                      <option value="">Memuat data provinsi...</option>
+                    </select>
+                  </div>
+                  <div class="col-md-6 mb-3">
+                    <label for="kota" class="form-label">
+                      <i class="fas fa-city me-1"></i>Kota/Kabupaten
+                    </label>
+                    <select class="form-select form-control-modern" id="kota" name="kota" disabled>
+                      <option value="">Pilih Kota/Kabupaten</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div class="mb-3">
+                  <label class="form-label">
+                    <i class="fas fa-venus-mars me-1"></i>Jenis Kelamin
+                  </label>
+                  <div class="gender-options">
+                    <div class="form-check form-check-custom">
+                      <input class="form-check-input" type="radio" name="jk" id="laki" value="Laki-laki" required>
+                      <label class="form-check-label" for="laki">
+                        <i class="fas fa-mars me-1"></i>Laki-laki
+                      </label>
+                    </div>
+                    <div class="form-check form-check-custom">
+                      <input class="form-check-input" type="radio" name="jk" id="perempuan" value="Perempuan">
+                      <label class="form-check-label" for="perempuan">
+                        <i class="fas fa-venus me-1"></i>Perempuan
+                      </label>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="mb-3">
+                  <label class="form-label">
+                    <i class="fas fa-heart me-1"></i>Hobi
+                  </label>
+                  <div class="hobby-options">
+                    <div class="form-check form-check-custom">
+                      <input class="form-check-input" type="checkbox" name="hobi[]" value="Membaca" id="hobi1">
+                      <label class="form-check-label" for="hobi1">
+                        <i class="fas fa-book me-1"></i>Membaca
+                      </label>
+                    </div>
+                    <div class="form-check form-check-custom">
+                      <input class="form-check-input" type="checkbox" name="hobi[]" value="Traveling" id="hobi2">
+                      <label class="form-check-label" for="hobi2">
+                        <i class="fas fa-plane me-1"></i>Traveling
+                      </label>
+                    </div>
+                    <div class="form-check form-check-custom">
+                      <input class="form-check-input" type="checkbox" name="hobi[]" value="Olahraga" id="hobi3">
+                      <label class="form-check-label" for="hobi3">
+                        <i class="fas fa-dumbbell me-1"></i>Olahraga
+                      </label>
+                    </div>
+                    <div class="form-check form-check-custom">
+                      <input class="form-check-input" type="checkbox" name="hobi[]" value="Menyanyi" id="hobi4">
+                      <label class="form-check-label" for="hobi3">
+                        <i class="fa-solid fa-music me-1"></i>Menyanyi
+                      </label>
+                    </div>
+
+
+                  </div>
+                </div>
+
+                <div class="mb-3">
+                  <label for="pesan" class="form-label">
+                    <i class="fas fa-comment me-1"></i>Pesan
+                  </label>
+                  <textarea class="form-control form-control-modern" id="pesan" name="pesan" rows="3" placeholder="Tulis pesan Anda di sini..."></textarea>
+                </div>
+
+                <div class="mb-4">
+                  <label for="file" class="form-label">
+                    <i class="fas fa-upload me-1"></i>Upload Foto (opsional)
+                  </label>
+                  <input class="form-control form-control-modern" type="file" id="file" name="file" accept="image/*">
+                </div>
+
+                <div class="text-center">
+                  <button type="submit" class="btn btn-primary btn-lg px-5">
+                    <i class="fas fa-paper-plane me-2"></i>Kirim Data
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+            <!-- Canvas Section -->
+  <section id="canvas-section" class="py-5 bg-light">
+    <div class="container">
+      <div class="row">
+        <div class="col-lg-10 mx-auto">
+          <div class="card shadow-lg border-0">
+            <div class="card-header bg-gradient-success text-white">
+              <h3 class="card-title mb-0">
+                <i class="fas fa-paint-brush me-2"></i>Drawing Canvas
+              </h3>
+            </div>
+            <div class="card-body">
+              <!-- Drawing Tools -->
+              <div class="drawing-tools mb-4">
+                <div class="row align-items-center">
+                  <div class="col-lg-8">
+                    <div class="tool-group">
+                      <label class="form-label fw-bold">
+                        <i class="fas fa-tools me-1"></i>Drawing Tools:
+                      </label>
+                      <div class="btn-group flex-wrap" role="group">
+                        <button type="button" class="btn btn-outline-primary active" onclick="setTool('pen')" id="penTool">
+                          <i class="fas fa-pen me-1"></i>Pen
+                        </button>
+                        <button type="button" class="btn btn-outline-primary" onclick="setTool('brush')" id="brushTool">
+                          <i class="fas fa-paint-brush me-1"></i>Brush
+                        </button>
+                        <button type="button" class="btn btn-outline-primary" onclick="setTool('pencil')" id="pencilTool">
+                          <i class="fas fa-pencil-alt me-1"></i>Pencil
+                        </button>
+                        <button type="button" class="btn btn-outline-primary" onclick="setTool('marker')" id="markerTool">
+                          <i class="fas fa-highlighter me-1"></i>Marker
+                        </button>
+                        <button type="button" class="btn btn-outline-warning" onclick="setTool('eraser')" id="eraserTool">
+                          <i class="fas fa-eraser me-1"></i>Eraser
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="col-lg-4">
+                    <div class="tool-controls">
+                      <div class="mb-2">
+                        <label class="form-label fw-bold">
+                          <i class="fas fa-circle me-1"></i>Size: <span id="sizeValue">5</span>px
+                        </label>
+                        <input type="range" class="form-range" min="1" max="50" value="5" id="brushSize" oninput="updateBrushSize(this.value)">
+                      </div>
+                      <div>
+                        <label class="form-label fw-bold">
+                          <i class="fas fa-palette me-1"></i>Color:
+                        </label>
+                        <input type="color" class="form-control form-control-color" id="colorPicker" value="#667eea" onchange="updateColor(this.value)" style="width: 60px; height: 40px;">
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Color Palette -->
+              <div class="color-palette mb-4">
+                <label class="form-label fw-bold">
+                  <i class="fas fa-swatchbook me-1"></i>Quick Colors:
+                </label>
+                <div class="palette-colors">
+                  <div class="color-swatch" style="background: #000000" onclick="selectColor('#000000')" title="Black"></div>
+                  <div class="color-swatch" style="background: #667eea" onclick="selectColor('#667eea')" title="Blue"></div>
+                  <div class="color-swatch" style="background: #f093fb" onclick="selectColor('#f093fb')" title="Pink"></div>
+                  <div class="color-swatch" style="background: #4facfe" onclick="selectColor('#4facfe')" title="Light Blue"></div>
+                  <div class="color-swatch" style="background: #43e97b" onclick="selectColor('#43e97b')" title="Green"></div>
+                  <div class="color-swatch" style="background: #fa709a" onclick="selectColor('#fa709a')" title="Rose"></div>
+                  <div class="color-swatch" style="background: #feca57" onclick="selectColor('#feca57')" title="Yellow"></div>
+                  <div class="color-swatch" style="background: #ff6b6b" onclick="selectColor('#ff6b6b')" title="Red"></div>
+                  <div class="color-swatch" style="background: #a55eea" onclick="selectColor('#a55eea')" title="Purple"></div>
+                  <div class="color-swatch" style="background: #26de81" onclick="selectColor('#26de81')" title="Mint"></div>
+                  <div class="color-swatch" style="background: #fd79a8" onclick="selectColor('#fd79a8')" title="Coral"></div>
+                  <div class="color-swatch" style="background: #fdcb6e" onclick="selectColor('#fdcb6e')" title="Orange"></div>
+                </div>
+              </div>
+
+              <!-- Canvas -->
+              <div class="canvas-container text-center">
+                <canvas id="myCanvas" class="canvas-modern"></canvas>
+              </div>
+
+              <!-- Action Buttons -->
+              <div class="canvas-actions mt-4 text-center">
+                <button class="btn btn-danger me-2" onclick="clearCanvas()">
+                  <i class="fas fa-trash me-1"></i>Clear All
+                </button>
+                <button class="btn btn-info me-2" onclick="undoLastAction()">
+                  <i class="fas fa-undo me-1"></i>Undo
+                </button>
+                <button class="btn btn-success me-2" onclick="saveCanvas()">
+                  <i class="fas fa-download me-1"></i>Save Image
+                </button>
+                <button class="btn btn-warning" onclick="showCanvasInfo()">
+                  <i class="fas fa-info-circle me-1"></i>Info
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Table Section -->
+  <section id="table-section" class="py-5">
+    <div class="container">
+      <!-- Simple Table -->
+      <div class="row mb-5">
+        <div class="col-12">
+          <div class="card shadow-lg border-0">
+            <div class="card-header bg-gradient-info text-white">
+              <h3 class="card-title mb-0">
+                <i class="fas fa-table me-2"></i>Data Siswa
+              </h3>
+            </div>
+            <div class="card-body">
+              <div class="table-responsive">
+                <table class="table table-hover table-striped table-modern">
+                  <thead>
+                    <tr>
+                      <th><i class="fas fa-hashtag me-1"></i>No</th>
+                      <th><i class="fas fa-user me-1"></i>Nama</th>
+                      <th><i class="fas fa-star me-1"></i>Nilai</th>
+                      <th><i class="fas fa-graduation-cap me-1"></i>Grade</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>1</td>
+                      <td>Andi Pratama</td>
+                      <td><span class="badge bg-success">85</span></td>
+                      <td><span class="badge bg-primary">B+</span></td>
+                    </tr>
+                    <tr>
+                      <td>2</td>
+                      <td>Budi Santoso</td>
+                      <td><span class="badge bg-success">92</span></td>
+                      <td><span class="badge bg-success">A-</span></td>
+                    </tr>
+                    <tr>
+                      <td>3</td>
+                      <td>Citra Dewi</td>
+                      <td><span class="badge bg-warning">78</span></td>
+                      <td><span class="badge bg-warning">B</span></td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- DataTable -->
+      <div class="row">
+        <div class="col-12">
+          <div class="card shadow-lg border-0">
+            <div class="card-header bg-gradient-warning text-dark">
+              <h3 class="card-title mb-0">
+                <i class="fas fa-database me-2"></i>Data Produk dengan Export
+              </h3>
+            </div>
+            <div class="card-body">
+              <div class="table-responsive">
+                <table id="dataTable" class="table table-striped table-modern" style="width:100%">
+                  <thead>
+                    <tr>
+                      <th><i class="fas fa-id-badge me-1"></i>ID</th>
+                      <th><i class="fas fa-box me-1"></i>Produk</th>
+                      <th><i class="fas fa-money-bill me-1"></i>Harga</th>
+                      <th><i class="fas fa-warehouse me-1"></i>Stok</th>
+                      <th><i class="fas fa-chart-line me-1"></i>Status</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>1</td>
+                      <td>Laptop Gaming</td>
+                      <td>Rp 15.000.000</td>
+                      <td>10</td>
+                      <td><span class="badge bg-success">Ready</span></td>
+                    </tr>
+                    <tr>
+                      <td>2</td>
+                      <td>Mouse Wireless</td>
+                      <td>Rp 150.000</td>
+                      <td>50</td>
+                      <td><span class="badge bg-success">Ready</span></td>
+                    </tr>
+                    <tr>
+                      <td>3</td>
+                      <td>Keyboard Mechanical</td>
+                      <td>Rp 500.000</td>
+                      <td>30</td>
+                      <td><span class="badge bg-success">Ready</span></td>
+                    </tr>
+                    <tr>
+                      <td>4</td>
+                      <td>Monitor 4K</td>
+                      <td>Rp 3.500.000</td>
+                      <td>5</td>
+                      <td><span class="badge bg-warning">Limited</span></td>
+                    </tr>
+                    <tr>
+                      <td>5</td>
+                      <td>Webcam HD</td>
+                      <td>Rp 800.000</td>
+                      <td>0</td>
+                      <td><span class="badge bg-danger">Out of Stock</span></td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="bg-dark text-white py-4 mt-5">
+    <div class="container text-center">
+      <p class="mb-0">
+        <i class="fas fa-code me-1"></i>
+        Data Management System &copy; 2025. Made with 
+        <i class="fas fa-heart text-danger"></i>
+      </p>
+    </div>
+  </footer>
+
+  <!-- Loading Overlay -->
+  <div id="loadingOverlay" class="loading-overlay">
+    <div class="loading-spinner">
+      <i class="fas fa-spinner fa-spin fa-3x text-primary"></i>
+      <p class="mt-3">Loading...</p>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
+  <script src="https://cdn.datatables.net/1.13.7/js/dataTables.bootstrap5.min.js"></script>
+  <script src="https://cdn.datatables.net/buttons/2.4.2/js/dataTables.buttons.min.js"></script>
+  <script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.bootstrap5.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/pdfmake.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/vfs_fonts.js"></script>
+  <script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.html5.min.js"></script>
+  
+  <!-- Data Wilayah Indonesia -->
+  <script src="data-wilayah.js"></script>
+  
+  <!-- Main Script -->
+  <script src="script.js"></script>
+
+</body>
+</html>
