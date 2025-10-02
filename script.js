@@ -1,3 +1,4 @@
+// ===== GLOBAL VARIABLES =====
 let canvas, ctx;
 let isDrawing = false;
 let currentTool = 'pen';
@@ -8,22 +9,31 @@ let lastY = 0;
 let drawingHistory = [];
 let historyIndex = -1;
 
+// Data storage for form entries
+let userData = [];
+let dataTableInstance = null;
+
+// ===== DOCUMENT READY =====
 $(document).ready(function() {
   initializeApp();
 });
 
+// ===== INITIALIZE APPLICATION =====
 function initializeApp() {
   initCanvas();
   initDataTable();
   initFormValidation();
   initSmoothScrolling();
   initAnimations();
+  loadUserDataFromStorage();
   
+  // Hide loading overlay after everything is loaded
   setTimeout(() => {
     hideLoading();
   }, 1000);
 }
 
+// ===== CANVAS FUNCTIONS =====
 function initCanvas() {
   canvas = document.getElementById('myCanvas');
   if (!canvas) {
@@ -33,26 +43,33 @@ function initCanvas() {
   
   ctx = canvas.getContext('2d');
   
+  // Set canvas size
   canvas.width = 800;
   canvas.height = 500;
   
+  // Set initial canvas background
   ctx.fillStyle = '#ffffff';
   ctx.fillRect(0, 0, canvas.width, canvas.height);
   
+  // Configure drawing context
   ctx.lineCap = 'round';
   ctx.lineJoin = 'round';
   
+  // Save initial state
   saveCanvasState();
   
+  // Add event listeners for drawing
   canvas.addEventListener('mousedown', startDrawing);
   canvas.addEventListener('mousemove', draw);
   canvas.addEventListener('mouseup', stopDrawing);
   canvas.addEventListener('mouseout', stopDrawing);
   
+  // Touch events for mobile
   canvas.addEventListener('touchstart', handleTouchStart, { passive: false });
   canvas.addEventListener('touchmove', handleTouchMove, { passive: false });
   canvas.addEventListener('touchend', stopDrawing);
   
+  // Set initial cursor
   updateCanvasCursor();
   
   console.log('Canvas initialized successfully!');
@@ -64,6 +81,7 @@ function startDrawing(e) {
   lastX = e.clientX - rect.left;
   lastY = e.clientY - rect.top;
   
+  // Start a new path for current stroke
   ctx.beginPath();
   ctx.moveTo(lastX, lastY);
   
@@ -87,14 +105,17 @@ function stopDrawing() {
   if (!isDrawing) return;
   isDrawing = false;
   
+  // Save canvas state for undo functionality
   saveCanvasState();
   
   console.log('Drawing stopped');
 }
 
 function drawLine(x1, y1, x2, y2) {
+  // Set composite operation based on tool
   ctx.globalCompositeOperation = currentTool === 'eraser' ? 'destination-out' : 'source-over';
   
+  // Configure drawing style based on tool
   switch(currentTool) {
     case 'pen':
       ctx.strokeStyle = currentColor;
@@ -110,7 +131,7 @@ function drawLine(x1, y1, x2, y2) {
       ctx.strokeStyle = currentColor;
       ctx.lineWidth = currentSize * 0.8;
       ctx.globalAlpha = 0.7;
-
+      // Add some texture for pencil effect
       addPencilTexture(x1, y1, x2, y2);
       return;
     case 'marker':
@@ -124,11 +145,13 @@ function drawLine(x1, y1, x2, y2) {
       break;
   }
   
+  // Draw the line
   ctx.beginPath();
   ctx.moveTo(x1, y1);
   ctx.lineTo(x2, y2);
   ctx.stroke();
   
+  // Reset alpha
   ctx.globalAlpha = 1;
 }
 
@@ -149,11 +172,12 @@ function addPencilTexture(x1, y1, x2, y2) {
 }
 
 function setTool(tool) {
-
+  // Remove active class from all tool buttons
   document.querySelectorAll('.tool-group .btn').forEach(btn => {
     btn.classList.remove('active');
   });
-
+  
+  // Add active class to selected tool
   const toolButton = document.getElementById(tool + 'Tool');
   if (toolButton) {
     toolButton.classList.add('active');
@@ -195,6 +219,7 @@ function updateBrushSize(size) {
 function updateColor(color) {
   currentColor = color;
   
+  // Update active color swatch
   document.querySelectorAll('.color-swatch').forEach(swatch => {
     swatch.classList.remove('active');
   });
@@ -209,6 +234,7 @@ function selectColor(color) {
     colorPicker.value = color;
   }
   
+  // Update active color swatch
   document.querySelectorAll('.color-swatch').forEach(swatch => {
     swatch.classList.remove('active');
     const swatchColor = swatch.style.background || swatch.style.backgroundColor;
@@ -223,11 +249,12 @@ function selectColor(color) {
 }
 
 function clearCanvas() {
-
+  // Show confirmation dialog
   if (confirm('Apakah Anda yakin ingin menghapus semua gambar?')) {
     ctx.fillStyle = '#ffffff';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     
+    // Clear drawing history
     drawingHistory = [];
     historyIndex = -1;
     saveCanvasState();
@@ -240,12 +267,15 @@ function clearCanvas() {
 function saveCanvasState() {
   historyIndex++;
   
+  // Remove any history after current index
   if (historyIndex < drawingHistory.length) {
     drawingHistory.splice(historyIndex);
   }
   
+  // Save current canvas state
   drawingHistory.push(canvas.toDataURL());
   
+  // Limit history to 20 states
   if (drawingHistory.length > 20) {
     drawingHistory.shift();
     historyIndex--;
@@ -274,11 +304,12 @@ function undoLastAction() {
 }
 
 function saveCanvas() {
-
+  // Create download link
   const link = document.createElement('a');
   link.download = `drawing_${new Date().getTime()}.png`;
   link.href = canvas.toDataURL();
   
+  // Trigger download
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);
@@ -343,6 +374,7 @@ function showCanvasInfo() {
   });
 }
 
+// Touch event handlers for mobile devices
 function handleTouchStart(e) {
   e.preventDefault();
   const touch = e.touches[0];
@@ -373,6 +405,208 @@ function handleTouchMove(e) {
   lastY = currentY;
 }
 
+// ===== FORM FUNCTIONS =====
+
+// Handle form submission
+function handleFormSubmit(event) {
+  event.preventDefault();
+  
+  if (!validateForm()) {
+    return false;
+  }
+  
+  const formData = getFormData();
+  const editIndex = document.getElementById('editIndex').value;
+  
+  if (editIndex !== '') {
+    // Update existing data
+    userData[parseInt(editIndex)] = formData;
+    showNotification('Data berhasil diupdate!', 'success');
+  } else {
+    // Add new data
+    userData.push(formData);
+    showNotification('Data berhasil ditambahkan!', 'success');
+  }
+  
+  // Save to localStorage
+  saveUserDataToStorage();
+  
+  // Refresh table
+  refreshDataTable();
+  
+  // Reset form
+  resetForm();
+  
+  // Scroll to table
+  setTimeout(() => {
+    document.getElementById('table-section').scrollIntoView({ behavior: 'smooth' });
+  }, 500);
+  
+  return false;
+}
+
+// Get form data
+function getFormData() {
+  const provinsiSelect = document.getElementById('provinsi');
+  const kotaSelect = document.getElementById('kota');
+  
+  // Get selected provinsi and kota names
+  const provinsiName = provinsiSelect.options[provinsiSelect.selectedIndex]?.getAttribute('data-nama') || 
+                       provinsiSelect.options[provinsiSelect.selectedIndex]?.text || '';
+  const kotaName = kotaSelect.options[kotaSelect.selectedIndex]?.getAttribute('data-nama') || 
+                   kotaSelect.options[kotaSelect.selectedIndex]?.text || '';
+  
+  // Get hobi yang dipilih
+  const hobiCheckboxes = document.querySelectorAll('input[name="hobi"]:checked');
+  const hobiArray = Array.from(hobiCheckboxes).map(cb => cb.value);
+  
+  return {
+    nama: document.getElementById('nama').value,
+    umur: document.getElementById('umur').value,
+    provinsi: provinsiName,
+    provinsiId: document.getElementById('provinsi').value,
+    kota: kotaName,
+    kotaId: document.getElementById('kota').value,
+    jenisKelamin: document.querySelector('input[name="jk"]:checked')?.value || '',
+    hobi: hobiArray,
+    pesan: document.getElementById('pesan').value,
+    timestamp: new Date().toISOString()
+  };
+}
+
+// Reset form
+function resetForm() {
+  document.getElementById('myForm').reset();
+  document.getElementById('editIndex').value = '';
+  document.getElementById('submitBtn').innerHTML = '<i class="fas fa-paper-plane me-2"></i>Tambah Data';
+  document.getElementById('cancelBtn').style.display = 'none';
+  
+  // Reset kota dropdown
+  const kotaSelect = document.getElementById('kota');
+  kotaSelect.innerHTML = '<option value="">Pilih Kota/Kabupaten</option>';
+  kotaSelect.disabled = true;
+}
+
+// Cancel edit
+function cancelEdit() {
+  resetForm();
+  showNotification('Edit dibatalkan', 'info');
+}
+
+// Edit data
+function editData(index) {
+  const data = userData[index];
+  
+  // Fill form with data
+  document.getElementById('nama').value = data.nama;
+  document.getElementById('umur').value = data.umur;
+  document.getElementById('provinsi').value = data.provinsiId;
+  
+  // Load kota for selected provinsi
+  populateKabupatenKotaDropdown(data.provinsiId).then(() => {
+    document.getElementById('kota').value = data.kotaId;
+  });
+  
+  // Set jenis kelamin
+  if (data.jenisKelamin === 'Laki-laki') {
+    document.getElementById('laki').checked = true;
+  } else if (data.jenisKelamin === 'Perempuan') {
+    document.getElementById('perempuan').checked = true;
+  }
+  
+  // Set hobi
+  document.querySelectorAll('input[name="hobi"]').forEach(cb => {
+    cb.checked = data.hobi.includes(cb.value);
+  });
+  
+  document.getElementById('pesan').value = data.pesan;
+  document.getElementById('editIndex').value = index;
+  
+  // Update button text
+  document.getElementById('submitBtn').innerHTML = '<i class="fas fa-save me-2"></i>Update Data';
+  document.getElementById('cancelBtn').style.display = 'inline-block';
+  
+  // Scroll to form
+  setTimeout(() => {
+    document.getElementById('form-section').scrollIntoView({ behavior: 'smooth' });
+  }, 300);
+  
+  showNotification('Mode edit aktif. Ubah data dan klik Update.', 'info');
+}
+
+// Delete data
+function deleteData(index) {
+  const data = userData[index];
+  
+  if (confirm(`Apakah Anda yakin ingin menghapus data "${data.nama}"?`)) {
+    userData.splice(index, 1);
+    saveUserDataToStorage();
+    refreshDataTable();
+    showNotification('Data berhasil dihapus!', 'success');
+  }
+}
+
+// Refresh DataTable
+function refreshDataTable() {
+  if (dataTableInstance) {
+    dataTableInstance.destroy();
+  }
+  
+  const tableBody = document.getElementById('tableBody');
+  tableBody.innerHTML = '';
+  
+  userData.forEach((data, index) => {
+    const row = document.createElement('tr');
+    row.innerHTML = `
+      <td>${index + 1}</td>
+      <td>${data.nama}</td>
+      <td>${data.umur}</td>
+      <td>${data.provinsi}</td>
+      <td>${data.kota}</td>
+      <td>${data.jenisKelamin}</td>
+      <td>${data.hobi.join(', ') || '-'}</td>
+      <td>${data.pesan || '-'}</td>
+      <td class="text-nowrap">
+        <button class="btn btn-sm btn-warning me-1" onclick="editData(${index})" title="Edit">
+          <i class="fas fa-edit"></i>
+        </button>
+        <button class="btn btn-sm btn-danger" onclick="deleteData(${index})" title="Hapus">
+          <i class="fas fa-trash"></i>
+        </button>
+      </td>
+    `;
+    tableBody.appendChild(row);
+  });
+  
+  // Reinitialize DataTable
+  initDataTable();
+}
+
+// Save userData to localStorage
+function saveUserDataToStorage() {
+  try {
+    localStorage.setItem('userData', JSON.stringify(userData));
+    console.log('Data saved to localStorage');
+  } catch (error) {
+    console.error('Error saving to localStorage:', error);
+  }
+}
+
+// Load userData from localStorage
+function loadUserDataFromStorage() {
+  try {
+    const stored = localStorage.getItem('userData');
+    if (stored) {
+      userData = JSON.parse(stored);
+      console.log('Data loaded from localStorage:', userData.length, 'records');
+      refreshDataTable();
+    }
+  } catch (error) {
+    console.error('Error loading from localStorage:', error);
+    userData = [];
+  }
+}
+
 function loadKota() {
   const provinsiSelect = document.getElementById('provinsi');
   const provinsiId = provinsiSelect.value;
@@ -384,8 +618,10 @@ function loadKota() {
     return;
   }
   
+  // Show loading
   showLoading();
   
+  // Load kabupaten/kota from API
   populateKabupatenKotaDropdown(provinsiId).finally(() => {
     hideLoading();
   });
@@ -395,32 +631,11 @@ function initFormValidation() {
   const form = document.getElementById('myForm');
   if (!form) return;
   
+  // Add real-time validation
   const inputs = form.querySelectorAll('input[required], select[required]');
   inputs.forEach(input => {
     input.addEventListener('blur', validateField);
     input.addEventListener('input', clearFieldError);
-  });
-  
-  form.addEventListener('submit', function(e) {
-    e.preventDefault();
-    
-    if (validateForm()) {
-      showLoading();
-      
-      setTimeout(() => {
-        hideLoading();
-        showSuccessMessage('Data berhasil dikirim!');
-        
-        setTimeout(() => {
-          form.reset();
-          const kotaSelect = document.getElementById('kota');
-          if (kotaSelect) {
-            kotaSelect.disabled = true;
-            kotaSelect.innerHTML = '<option value="">Pilih Kota</option>';
-          }
-        }, 1500);
-      }, 2000);
-    }
   });
 }
 
@@ -435,6 +650,7 @@ function validateField(e) {
     return false;
   }
   
+  // Specific validations
   switch(field.type) {
     case 'text':
       if (field.id === 'nama' && value.length < 2) {
@@ -482,11 +698,13 @@ function validateForm() {
   let isValid = true;
   
   requiredFields.forEach(field => {
-    if (!validateField({ target: field })) {
+    if (!field.value.trim()) {
+      showFieldError(field, 'Field ini wajib diisi');
       isValid = false;
     }
   });
   
+  // Check radio buttons
   const genderRadios = form.querySelectorAll('input[name="jk"]');
   const isGenderSelected = Array.from(genderRadios).some(radio => radio.checked);
   
@@ -498,55 +716,71 @@ function validateForm() {
   return isValid;
 }
 
+// ===== DATATABLE FUNCTIONS =====
 function initDataTable() {
   const dataTable = $('#dataTable');
   if (dataTable.length === 0) return;
   
-  dataTable.DataTable({
+  dataTableInstance = dataTable.DataTable({
     dom: 'Bfrtip',
     buttons: [
       {
         extend: 'copyHtml5',
         text: '<i class="fas fa-copy me-1"></i>Copy',
-        className: 'btn btn-outline-primary btn-sm'
+        className: 'btn btn-outline-primary btn-sm',
+        exportOptions: {
+          columns: ':not(:last-child)' // Exclude action column
+        }
       },
       {
         extend: 'excelHtml5',
         text: '<i class="fas fa-file-excel me-1"></i>Excel',
-        className: 'btn btn-outline-success btn-sm'
+        className: 'btn btn-outline-success btn-sm',
+        exportOptions: {
+          columns: ':not(:last-child)'
+        }
       },
       {
         extend: 'csvHtml5',
         text: '<i class="fas fa-file-csv me-1"></i>CSV',
-        className: 'btn btn-outline-info btn-sm'
+        className: 'btn btn-outline-info btn-sm',
+        exportOptions: {
+          columns: ':not(:last-child)'
+        }
       },
       {
         extend: 'pdfHtml5',
         text: '<i class="fas fa-file-pdf me-1"></i>PDF',
         className: 'btn btn-outline-danger btn-sm',
         orientation: 'landscape',
-        pageSize: 'LEGAL'
+        pageSize: 'LEGAL',
+        exportOptions: {
+          columns: ':not(:last-child)'
+        }
       }
     ],
     responsive: true,
     pageLength: 10,
+    order: [[0, 'asc']],
     language: {
       search: "Cari:",
       lengthMenu: "Tampilkan _MENU_ data per halaman",
       info: "Menampilkan _START_ sampai _END_ dari _TOTAL_ data",
       infoEmpty: "Menampilkan 0 sampai 0 dari 0 data",
       infoFiltered: "(disaring dari _MAX_ total data)",
+      zeroRecords: "Tidak ada data yang ditemukan",
+      emptyTable: "Belum ada data. Silakan tambahkan data melalui form di atas.",
       paginate: {
         first: "Pertama",
         last: "Terakhir",
         next: "Selanjutnya",
         previous: "Sebelumnya"
-      },
-      emptyTable: "Tidak ada data tersedia"
+      }
     }
   });
 }
 
+// ===== UI FUNCTIONS =====
 function showLoading() {
   const loadingOverlay = document.getElementById('loadingOverlay');
   if (loadingOverlay) {
@@ -562,10 +796,11 @@ function hideLoading() {
 }
 
 function showNotification(message, type = 'info') {
-
+  // Remove existing notifications
   const existingNotifications = document.querySelectorAll('.notification-toast');
   existingNotifications.forEach(notification => notification.remove());
   
+  // Determine icon and color based on type
   let icon, bgColor, textColor;
   switch(type) {
     case 'error':
@@ -589,6 +824,7 @@ function showNotification(message, type = 'info') {
       textColor = 'white';
   }
   
+  // Create notification element
   const notification = document.createElement('div');
   notification.className = 'notification-toast';
   notification.style.cssText = `
@@ -619,6 +855,7 @@ function showNotification(message, type = 'info') {
   
   document.body.appendChild(notification);
   
+  // Auto remove after 5 seconds
   setTimeout(() => {
     if (notification.parentNode) {
       notification.style.animation = 'slideOutRight 0.5s ease-out';
@@ -628,7 +865,7 @@ function showNotification(message, type = 'info') {
 }
 
 function showSuccessMessage(message) {
-
+  // Create success modal
   const modal = document.createElement('div');
   modal.className = 'modal fade';
   modal.innerHTML = `
@@ -653,13 +890,14 @@ function showSuccessMessage(message) {
   const bootstrapModal = new bootstrap.Modal(modal);
   bootstrapModal.show();
   
+  // Remove modal after hiding
   modal.addEventListener('hidden.bs.modal', () => {
     modal.remove();
   });
 }
 
 function initSmoothScrolling() {
-
+  // Smooth scrolling for navigation links
   document.querySelectorAll('a[href^="#"]').forEach(anchor => {
     anchor.addEventListener('click', function (e) {
       e.preventDefault();
@@ -675,7 +913,7 @@ function initSmoothScrolling() {
 }
 
 function initAnimations() {
-
+  // Intersection Observer for scroll animations
   const observerOptions = {
     threshold: 0.1,
     rootMargin: '0px 0px -50px 0px'
@@ -689,13 +927,15 @@ function initAnimations() {
     });
   }, observerOptions);
   
-  document.querySelectorAll('.card, section').forEach(element => {
+  // Observe all cards and main content divs
+  document.querySelectorAll('.card, #form-section, #canvas-section, #table-section').forEach(element => {
     element.style.opacity = '0';
     element.style.transform = 'translateY(30px)';
     observer.observe(element);
   });
 }
 
+// ===== UTILITY FUNCTIONS =====
 function formatCurrency(amount) {
   return new Intl.NumberFormat('id-ID', {
     style: 'currency',
@@ -715,8 +955,20 @@ function debounce(func, wait) {
   };
 }
 
-window.addEventListener('load', function() {
+function formatDate(isoString) {
+  const date = new Date(isoString);
+  return date.toLocaleString('id-ID', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit'
+  });
+}
 
+// ===== EVENT LISTENERS =====
+window.addEventListener('load', function() {
+  // Add loading completed class to body
   document.body.classList.add('loaded');
 });
 
@@ -731,6 +983,17 @@ window.addEventListener('scroll', debounce(() => {
   }
 }, 10));
 
+// Prevent accidental page leave if there's unsaved data
+window.addEventListener('beforeunload', function(e) {
+  const editIndex = document.getElementById('editIndex');
+  if (editIndex && editIndex.value !== '') {
+    e.preventDefault();
+    e.returnValue = 'Anda memiliki perubahan yang belum disimpan. Yakin ingin meninggalkan halaman?';
+    return e.returnValue;
+  }
+});
+
+// ===== EXPOSE GLOBAL FUNCTIONS =====
 window.loadKota = loadKota;
 window.setTool = setTool;
 window.updateBrushSize = updateBrushSize;
@@ -740,5 +1003,17 @@ window.clearCanvas = clearCanvas;
 window.undoLastAction = undoLastAction;
 window.saveCanvas = saveCanvas;
 window.showCanvasInfo = showCanvasInfo;
+window.handleFormSubmit = handleFormSubmit;
+window.editData = editData;
+window.deleteData = deleteData;
+window.cancelEdit = cancelEdit;
 
+// ===== INITIALIZATION LOG =====
 console.log('Script loaded successfully!');
+console.log('Features available:');
+console.log('- Form Input & Validation');
+console.log('- CRUD Operations (Create, Read, Update, Delete)');
+console.log('- Drawing Canvas with Multiple Tools');
+console.log('- DataTable with Export (Excel, PDF, CSV)');
+console.log('- Provinsi & Kota/Kabupaten from API');
+console.log('- LocalStorage for Data Persistence');
