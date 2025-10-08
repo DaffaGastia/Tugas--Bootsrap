@@ -450,6 +450,28 @@ body {
   visibility: visible;
 }
 
+/* === Signature Canvas === */
+#signatureCanvas {
+  border: 2px solid #dee2e6;
+  border-radius: 10px;
+  background-color: white;
+  cursor: crosshair;
+  touch-action: none;
+}
+
+.signature-container {
+  background: #f8f9fa;
+  padding: 1.5rem;
+  border-radius: 12px;
+  border: 1px solid #e9ecef;
+}
+
+/* === Optional: efek saat menggambar === */
+#signatureCanvas.drawing {
+  box-shadow: 0 0 10px rgba(0, 123, 255, 0.5);
+}
+
+
 .loading-spinner {
   text-align: center;
   color: #667eea;
